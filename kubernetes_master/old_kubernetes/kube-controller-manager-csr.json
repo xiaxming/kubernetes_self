@@ -1,0 +1,21 @@
+{
+    "CN": "system:kube-controller-manager",
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "hosts": [
+      "127.0.0.1",
+      "192.168.12.129",
+      "192.168.12.130"
+    ],
+    "names": [
+      {
+        "C": "CN",
+        "ST": "ChengDu",
+        "L": "ChengDu",
+        "O": "system:kube-controller-manager",
+        "OU": "xingming"
+      }
+    ]
+}

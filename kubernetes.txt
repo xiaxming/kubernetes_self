@@ -1,0 +1,206 @@
+source <(kubectl completion bash)
+source <(kubeadm completion bash)
+//使k8s相关命令能够tab
+
+6443 #kube-apiserve
+10259 #kube-schedule
+10257 #kube-controll
+
+
+route add  default gw 192.168.12.2
+netstat -rn
+
+yum install -y kubelet kubeadm kubectl
+systemctl enable kubelet && systemctl start kubelet
+
+
+初始化k8s
+kubeadm init  \
+--apiserver-advertise-address=192.168.12.129   \
+--image-repository registry.aliyuncs.com/google_containers  \
+--kubernetes-version=1.18.0  \
+--service-cidr=10.10.0.0/16   \
+--pod-network-cidr=10.244.0.0/16
+
+
+[root@jumpserver ~]# cat /proc/sys/net/ipv4/ip_forward
+1
+vim   /etc/sysconfig/network-scripts/ifcfg-ens33
+DNS1=223.5.5.5
+
+初始化成功后
+kubeadm join 192.168.12.129:6443 --token ltk4d6.zbgkk45mdrj6m18w                                     --discovery-token-ca-cert-hash sha256:42aeb453952d4b85b378338c28304812f1d155f123bf29b5cfa76f385c75b544
+
+注:若提示拒绝连接，修改/etc/hosts文件，增加
+151.101.76.133 raw.githubusercontent.com
+
+kubectl describe secrets -n kubernetes-dashboard kubernetes-dashboard-token-5l4jc | grep token | awk 'NR==3{print $2}'
+
+$ docker ps // 查看所有正在运行容器
+$ docker stop containerId // containerId 是容器的ID
+$ docker ps -a // 查看所有容器
+$ docker ps -a -q // 查看所有容器ID
+$ docker stop $(docker ps -a -q) //  stop停止所有容器
+$ docker  rm $(docker ps -a -q) //   remove删除所有容器
+$ docker save > nginx.tar nginx:latest 镜像保存为tar包
+$ docker load < nginx.tar              镜像tar包导入
+
+$ docker ps -a | grep 3d8f9b5d316c
+$ docker stop 3d8f9b5d316c
+$ docker  rm 3d8f9b5d316c
+$ docker tag 300bcfd0dd76 centos7:v1
+$ 正常退出不关闭容器，请按Ctrl+P+Q
+$ kubectl exec -n kube-system -it kube-proxy-p82j8 sh   进入容器
+$ kubectl exec  -n  nginx-service nginx-5d69464f48-qbbjh  cat /etc/resolv.conf  查看容器里面配置
+
+ 
+docker images
+查看所有镜像
+
+docker rmi 镜像id 删除镜像
+
+删除如下报错的镜像--->Error response from daemon: conflict: unable to delete b3b94275d97c (must be forced) - image is referenced in multiple repositories
+docker rmi repository:tag  
+
+kubectl delete -f recommended.yaml 删除相关pod
+
+kubectl get pods -n kube-system                     //查看创建完成的pod资源
+kubectl  get node                                   //查看所有node
+
+kubectl  get pod  --all-namespaces                  //所有namespace的pod
+查看pod资源在哪个节点(属于不同的namespace)
+kubectl get svc -n  kubernetes-dashboard                     //使用如下命令获取kuboard暴露的端口号(服务暴露的端口)
+kubectl get service -n  kubernetes-dashboard                 //使用如下命令获取kuboard暴露的端口号(服务暴露的端口)
+kubectl get pods -n kubernetes-dashboard -o wide            //查看pod资源资源部署在哪个节点的及IP(NODE下面)
+
+kubectl apply -f  kuboard.yaml                     //创建pod
+1、使用kubectl 命令创建：kubectl run 名称 --image= 镜像
+2、使用yaml文件格式进行创建：kubectl create -f yaml文件
+kubectl delete -f  kuboard.yaml                    //删除pod
+
+kubectl delete pod  calico-node-w68zn  -n  kube-system
+
+kubectl describe  pod kubernetes-dashboard-5d4dc8b976-b9rsj -n kubernetes-dashboard 
+kubectl --namespace=kubernetes-dashboard  describe pod kubernetes-dashboard-5d4dc8b976-swv8t
+
+kubectl logs kube-controller-manager-jumpserver -n kube-system
+
+kubectl logs -f -n kubernetes-dashboard kubernetes-dashboard-
+
+kubectl get secret -n kube-system|grep admin
+kubectl get secret admin-token-s7krx -o jsonpath={.data.token} -n kube-system |base64 -d
+
+netstat -tnlp  #查看正在运行的程序
+
+#初始化失败
+swapoff -a
+kubeadm reset
+systemctl daemon-reload
+systemctl restart kubelet
+iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X 
+
+如果还是加入不了，重新生成token
+kubeadm token list查看加入集群的证书过期时间
+在master机器中执行，kubeadm token create，获取token，token有效期一般为24小时
+
+node1执行k8s相关命令，报api-server无8080端口
+echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile
+再source
+
+排查节点日志：	journalctl -f -u kubelet排查节点日志
+
+kubectl delete node node1 移除节点
+
+curl -I -m 10 -o /dev/null -s -w %{http_code} 10.244.166.129:80     //查看网页状态返回码
+
+删除一个deployment容器
+kubectl get pod -n nginx
+kubectl delete pod nginx-684bd4f4c-5gp9r -n nginx
+kubectl get pod -n nginx 再查查看，又起了一个pod
+kubectl get deployment -n nginx
+kubectl delete  deployments nginx  -n nginx
+
+后续创建所有的service pod deployment token 或其他namespace  一定先创建namespace做空间隔离 ，创建时加上新创建的namespace
+
+相关说明非部署master时，部署node时，部署服务时(已完成)
+node部署单独一章(已完成)
+其他常用命令分部署node，部署服务(已完成)
+相关说明对应措施查看是否正确(已完成)
+
+nginx实现外网访问----周一实现
+新加一个node再起一个deployment，看pod怎么调度到各个node上---已完成
+prometheus监控k8s---暂未完成
+调度算法----暂未完成
+其他更深的了解，包括readline探针或者其他
+登录token时间太短----暂未完成
+
+
+app: nginx 可以(要与前面kind的name对应)
+app：nginx-svc 不可以
+http://192.168.12.130:32000可以
+http://192.168.12.131:32000也可以 
+#130和131所有pod之前轮循
+
+cluster ip+ 端口不能访问(能访问被映射的端口地址即可)
+node ip+ 端口不能访问(能访问被映射的端口地址即可)
+不能跨节点访问(能访问被映射的端口地址即可)
+不能外网访问(能访问被映射的端口地址即可)
+修改pod里容器配置文件(通过webUI里面的命令选项可以进入pod)
+起node落到一个node上(为了高可用，这种直接pass)
+
+重要(容器不能上外网)：
+写dockerfile做nginx镜像
+volume配置
+
+
+相互隔离的访问(能访问被映射的端口即可)
+10.244.166.134:80 node1
+10.244.166.133:80 node1
+10.244.104.1:80 node2
+10.10.59.139:8080 node1、node2
+http://192.168.12.130:32000  all-node
+http://192.168.12.131:32000  all-node
+
+
+持久化的volume镜像拉不下(随便拉一个镜像下来即可，只是为了验证volume，持久化的目的是映射)
+nginx基础镜像无rpm、yum命令
+centos镜像正在拉取
+
+volume既可以映射本地目录----星期二
+也可以让容器使用宿主机的NFS共享目录使容器数据得以保存----星期三
+
+
+
+数据高可用负载均衡(映射如何保证数据一致)
+1、容器主从
+2、宿主机主从
+3、所有容器落在一个node上
+4、pv、pvc、不能做轮询，网页内容一致(实际生产环境本来就一致，测试环境只是为了看到有轮询效果故意把两台服务器index.html改成不一样)
+5、hostpath映射过于冗余，且不能保证所有节点内容一致
+
+
+一个pod多个容器怎么部署
+所有pod落在一个node上
+一个nginx镜像里面有vim、ifconfig等命令，容器无法上外网
+token过期时间过短
+prometheus监控kubernetes
+调度算法----暂未完成
+其他更深的了解，包括readline探针或者其他
+
+prometheus监控pod原理，是通过先node-exporter，再pod还是怎么
+共享目录data 是指拿来存数据还是需要手动往里放数据
+被映射目录为configmap里面指定，里面指定的文件宿主机是否一定要存在
+
+kubectl label nodes jumpserver disktype=master  修改标签
+kubectl get nodes node1  --show-labels  查看标签
+kubectl get serviceaccounts  prometheus-k8s  -n  monitoring -o yaml 查看serviceaccount信息
+kubectl get secrets  -n monitoring  prometheus-k8s-token-cp52t -o jsonpath={.data.token} | base64 -d  token信息
+
+
+
+
+
+
+
+
+

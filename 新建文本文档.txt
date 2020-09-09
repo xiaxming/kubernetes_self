@@ -1,0 +1,99 @@
+source <(kubectl completion bash)
+source <(kubeadm completion bash)
+
+eyJhbGciOiJSUzI1NiIsImtpZCI6InA2Vmt5enppaUhYS1R5TmJBN19zR1M4V0xaZURGNUd4cmJidTE0NERTMG8ifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhZG1pbi10b2tlbi1kY2ZmOSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJhZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjQxZTdlMTFlLTQ0Y2UtNGE1NC04YzZiLWNhNmI1MTZiYmY0YyIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTphZG1pbiJ9.yr7EyoxRVzL0pTY9J4ebLJr6J_Y92SaIDG6cPemK9YcX1q2nbdXFgTjwnVYoyCNFE_b7g8-x8kw9SbQ70rJgtFOvbiB3vzfqzCYXUfJt11gapQM6m7aUMw15n1SH4d8pyUvQAapyBrMQ35PROmdqyw2g0LdmUOr_05OULcC-APOlpQ5soX_wVf81jcN3UhLqf59pBdIA4dEWJtOFYNO7-ZqhrDZi8cvQ-mzZZqpsGsI9Xtw8YsR8yCVVHZW1FcMmYDaQmoovFOs0P9C0e9U56l8J2bcKDtiH0Idex4ES6D8_07tUUHrROmIFHbkSnvKCvJcBWFSEEy41VspysfkCWw 
+
+网关
+192.168.12.2
+
+子网掩码
+255.255.255.0
+
+chkconfig --list network
+正确的
+network        	0:off	1:off	2:on	3:on	4:on	5:on	6:off
+
+错误的
+network        	0:off	1:off	2:on	3:on	4:on	5:on	6:off
+
+grep -nr  "rule"   ./
+
+quay.io/prometheus/prometheus   
+v2.4.3
+/usr/local/prometheus/prometheus --config.file=/usr/local/prometheus/prometheus.yml --storage.tsdb.path=/xia/software/prometheus-data  &
+
+总述
+
+
+具体完成事项
+如果转正要怎么样
+[root@jumpserver kubernetes]# kubectl get service   --all-namespaces  | grep nginx
+nginx                  nginx-svc                   NodePort    10.10.167.193   <none>        8080:32000/TCP           32s
+[root@jumpserver kubernetes]# kubectl get pod   --all-namespaces  | grep nginx
+nginx                  nginx-684bd4f4c-bltkb                       1/1     Running   0          2m28s
+nginx                  nginx-684bd4f4c-gplqt                       1/1     Running   0          2m28s
+nginx                  nginx-684bd4f4c-rv8ks                       1/1     Running   0          2m28s
+[root@jumpserver kubernetes]# kubectl get deployments   --all-namespaces  | grep nginx
+nginx                  nginx                       3/3     3            3           2m41s
+[root@jumpserver kubernetes]# kubectl get svc  -n  nginx   -o wide
+NAME        TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE     SELECTOR
+nginx-svc   NodePort   10.10.167.193   <none>        8080:32000/TCP   6m34s   run=nginx-svc
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+  namespace: nginx-service
+spec:
+  type: NodePort
+  selector:
+    app: nginx-svc
+  ports:
+  - protocol: TCP
+    port: 8080  
+    #这个资源(svc)开放的端口
+    targetPort: 80
+    nodePort: 32000
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+  namespace: nginx-service
+spec:
+  type: NodePort
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 8080  
+    nodePort: 32000
+    #这个资源(svc)开放的端口
+    targetPort: 80
+修改文件内容，文件内容更加干劲整洁
+
+Error: failed to start container "prometheus": Error response from daemon: OCI runtime create failed: container_linux.go:349: starting container process caused "process_linux.go:449: container init caused \"rootfs_linux.go:58: mounting \\\"/var/lib/kubelet/pods/0acfc64e-200b-4482-a857-305f8d0abad6/volume-subpaths/prometheus-conf-volume/prometheus/1\\\" to rootfs \\\"/var/lib/docker/overlay2/0083764bebff090a1fe6f908b199b0e27d9ba6f5519a6ddd24e276ee57f52944/merged\\\" at \\\"/var/lib/docker/overlay2/0083764bebff090a1fe6f908b199b0e27d9ba6f5519a6ddd24e276ee57f52944/merged/etc/prometheus/prometheus.yml\\\" caused \\\"not a directory\\\"\"": unknown: Are you trying to mount a directory onto a file (or vice-versa)? Check if the specified host path exists and is the expected type
+Back-off restarting failed container
+
+Back-off restarting failed container
+Failed to pull image "prom/node-exporter:v0.16.0": rpc error: code = Unknown desc = Error response from daemon: Get https://registry-1.docker.io/v2/: net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+
+Unable to attach or mount volumes: unmounted volumes=[prometheus-data-volume], unattached volumes=[prometheus-token-n8qlh prometheus-data-volume prometheus-conf-volume prometheus-rules-volume]: timed out waiting for the condition
+Error: ErrImagePull
+
+Failed to pull image "prom/prometheus:latest": rpc error: code = Unknown desc = context canceled
+Back-off restarting failed container
+
+MountVolume.SetUp failed for volume "prometheus-rules-volume" : failed to sync configmap cache: timed out waiting for the condition
+Back-off restarting failed container
+
+running "VolumeBinding" filter plugin for pod "prometheus-k8s-0": pod has unbound immediate PersistentVolumeClaims
+MountVolume.SetUp failed for volume "rules" : configmap "prometheus-k8s-rules" not found
+
+
+Liveness probe failed: Get http://10.244.104.19:3000/api/health: dial tcp 10.244.104.19:3000: connect: connection refused
+
+
+
+
